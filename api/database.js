@@ -1,30 +1,233 @@
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
-// Configuração do banco de dados
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../database/mjtech.db');
+// Configuração do banco de dados para Vercel
+let DB_PATH = ':memory:'; // Default para Vercel
 
-// Criar instância do banco de dados
+// Verificar se estamos no Vercel
+if (process.env.VERCEL) {
+    // No Vercel, usamos memória
+    DB_PATH = ':memory:';
+    console.log('⚡ Usando banco de dados em memória (Vercel)');
+} else {
+    // Localmente, usamos arquivo
+    DB_PATH = process.env.DB_PATH || path.join(__dirname, '../database/mjtech.db');
+    
+    // Criar diretório se não existir
+    const dbDir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+    }
+}
+
+// Conectar ao banco de dados
 const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
         console.error('❌ Erro ao conectar ao banco de dados:', err.message);
         process.exit(1);
     }
-    console.log('✅ Conectado ao banco de dados SQLite:', DB_PATH);
+    console.log('✅ Conectado ao banco de dados:', DB_PATH);
     
     // Ativar foreign keys
     db.run('PRAGMA foreign_keys = ON');
-    
-    // Otimizações
     db.run('PRAGMA journal_mode = WAL');
     db.run('PRAGMA synchronous = NORMAL');
-    db.run('PRAGMA cache_size = -2000');
 });
+
+// Inicializar banco de dados
+const initializeDatabase = async () => {
+    try {
+        console.log('🔄 Inicializando banco de dados...');
+        
+        // Criar tabelas
+        const initSQL = `
+        -- Tabela de usuários
+        CREATE TABLE IF NOT EXISTS admin_users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            full_name VARCHAR(100) NOT NULL,
+            role VARCHAR(20) DEFAULT 'editor' CHECK(role IN ('admin', 'editor')),
+            is_active BOOLEAN DEFAULT 1,
+            last_login TIMESTAMP,
+            failed_attempts INTEGER DEFAULT 0,
+            locked_until TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- Tabela de produtos
+        CREATE TABLE IF NOT EXISTS products (
+            id VARCHAR(50) PRIMARY KEY,
+            title VARCHAR(200) NOT NULL,
+            description TEXT,
+            image_url TEXT,
+            price DECIMAL(10,2) NOT NULL,
+            old_price DECIMAL(10,2),
+            discount VARCHAR(20),
+            whatsapp_link TEXT NOT NULL,
+            condition VARCHAR(20) DEFAULT 'Novo',
+            available_quantity INTEGER DEFAULT 0,
+            sold_quantity INTEGER DEFAULT 0,
+            free_shipping BOOLEAN DEFAULT 0,
+            category VARCHAR(50),
+            is_active BOOLEAN DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- Tabela de logs
+        CREATE TABLE IF NOT EXISTS access_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            username VARCHAR(50),
+            ip_address VARCHAR(45),
+            user_agent TEXT,
+            action VARCHAR(50),
+            success BOOLEAN,
+            details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- Tabela de configurações
+        CREATE TABLE IF NOT EXISTS settings (
+            key VARCHAR(50) PRIMARY KEY,
+            value TEXT,
+            description TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        `;
+        
+        // Executar queries
+        const queries = initSQL.split(';').filter(q => q.trim());
+        for (const query of queries) {
+            if (query.trim()) {
+                await new Promise((resolve, reject) => {
+                    db.run(query, (err) => {
+                        if (err) reject(err);
+                        resolve();
+                    });
+                });
+            }
+        }
+        
+        console.log('✅ Tabelas criadas com sucesso!');
+        
+        // Verificar se o admin já existe
+        const adminExists = await new Promise((resolve, reject) => {
+            db.get('SELECT id FROM admin_users WHERE username = ?', 
+                  [process.env.ADMIN_USERNAME || 'admin'], 
+                  (err, row) => {
+                if (err) reject(err);
+                resolve(!!row);
+            });
+        });
+        
+        if (!adminExists) {
+            // Criar usuário admin padrão
+            const adminUsername = process.env.ADMIN_USERNAME || 'admin_mjtech';
+            const adminPassword = process.env.ADMIN_PASSWORD || 'S3nh@F0rt3!2025';
+            const passwordHash = bcrypt.hashSync(adminPassword, 10);
+            
+            await new Promise((resolve, reject) => {
+                db.run(
+                    `INSERT INTO admin_users 
+                    (username, email, password_hash, full_name, role) 
+                    VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        adminUsername,
+                        process.env.ADMIN_EMAIL || 'admin@mjtech.com.br',
+                        passwordHash,
+                        process.env.ADMIN_FULLNAME || 'Administrador MJ Tech',
+                        'admin'
+                    ],
+                    function(err) {
+                        if (err) reject(err);
+                        console.log('✅ Usuário admin criado com sucesso!');
+                        console.log('👤 Usuário:', adminUsername);
+                        console.log('🔑 Senha:', adminPassword);
+                        console.log('⚠️ ALTERE A SENHA NO PRIMEIRO LOGIN!');
+                        resolve();
+                    }
+                );
+            });
+            
+            // Inserir configurações padrão
+            const settings = [
+                ['store_name', 'MJ TECH', 'Nome da loja'],
+                ['store_whatsapp', 'https://wa.me/5519995189387', 'Link do WhatsApp'],
+                ['store_email', 'contato@mjtech.com.br', 'E-mail de contato'],
+                ['max_login_attempts', '5', 'Tentativas máximas de login'],
+                ['lockout_time', '900', 'Tempo de bloqueio em segundos'],
+                ['session_timeout', '7200', 'Timeout da sessão em segundos']
+            ];
+            
+            for (const [key, value, description] of settings) {
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'INSERT OR REPLACE INTO settings (key, value, description) VALUES (?, ?, ?)',
+                        [key, value, description],
+                        (err) => {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            }
+            
+            // Inserir produtos de exemplo
+            const sampleProducts = [
+                {
+                    id: 'mjtech-001',
+                    title: 'Reparo de Celular - MJ TECH',
+                    description: 'Conserto profissional de smartphones com garantia e peças de qualidade',
+                    image_url: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+                    price: 99.90,
+                    old_price: 149.90,
+                    discount: '33% OFF',
+                    whatsapp_link: 'https://wa.me/5519995189387?text=Olá! Gostaria de informações sobre reparo de celular',
+                    condition: 'Serviço',
+                    available_quantity: 999,
+                    sold_quantity: 150,
+                    free_shipping: 0,
+                    category: 'SERVIÇOS',
+                    is_active: 1
+                }
+            ];
+            
+            for (const product of sampleProducts) {
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        `INSERT INTO products 
+                        (id, title, description, image_url, price, old_price, discount, 
+                         whatsapp_link, condition, available_quantity, sold_quantity, 
+                         free_shipping, category, is_active) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        Object.values(product),
+                        (err) => {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            }
+            
+            console.log('🎉 Banco de dados inicializado com sucesso!');
+        } else {
+            console.log('✅ Banco de dados já inicializado');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar banco de dados:', error);
+    }
+};
 
 // Funções utilitárias
 const dbHelpers = {
-    // Executar query com retorno
     get: (query, params = []) => {
         return new Promise((resolve, reject) => {
             db.get(query, params, (err, row) => {
@@ -34,7 +237,6 @@ const dbHelpers = {
         });
     },
     
-    // Executar query com múltiplos resultados
     all: (query, params = []) => {
         return new Promise((resolve, reject) => {
             db.all(query, params, (err, rows) => {
@@ -44,7 +246,6 @@ const dbHelpers = {
         });
     },
     
-    // Executar query (INSERT, UPDATE, DELETE)
     run: (query, params = []) => {
         return new Promise((resolve, reject) => {
             db.run(query, params, function(err) {
@@ -52,50 +253,18 @@ const dbHelpers = {
                 resolve({ id: this.lastID, changes: this.changes });
             });
         });
-    },
-    
-    // Executar transação
-    transaction: (queries) => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                await dbHelpers.run('BEGIN TRANSACTION');
-                
-                for (const query of queries) {
-                    await dbHelpers.run(query.sql, query.params);
-                }
-                
-                await dbHelpers.run('COMMIT');
-                resolve(true);
-            } catch (error) {
-                await dbHelpers.run('ROLLBACK');
-                reject(error);
-            }
-        });
-    },
-    
-    // Fechar conexão
-    close: () => {
-        return new Promise((resolve, reject) => {
-            db.close((err) => {
-                if (err) reject(err);
-                resolve();
-            });
-        });
     }
 };
 
-// Modelos de dados
+// Modelos
 const models = {
-    // Usuários
     users: {
         create: async (userData) => {
-            const { username, email, passwordHash, fullName, role = 'editor' } = userData;
-            
             return await dbHelpers.run(
-                `INSERT INTO admin_users 
-                (username, email, password_hash, full_name, role) 
+                `INSERT INTO admin_users (username, email, password_hash, full_name, role) 
                 VALUES (?, ?, ?, ?, ?)`,
-                [username, email, passwordHash, fullName, role]
+                [userData.username, userData.email, userData.password_hash, 
+                 userData.full_name, userData.role || 'editor']
             );
         },
         
@@ -123,7 +292,6 @@ const models = {
         update: async (id, updates) => {
             const fields = Object.keys(updates);
             const values = Object.values(updates);
-            
             const setClause = fields.map(f => `${f} = ?`).join(', ');
             
             return await dbHelpers.run(
@@ -134,28 +302,33 @@ const models = {
         
         getAll: async () => {
             return await dbHelpers.all(
-                'SELECT id, username, email, full_name, role, is_active, last_login, created_at FROM admin_users ORDER BY created_at DESC'
+                'SELECT id, username, email, full_name, role, is_active, last_login, created_at 
+                FROM admin_users ORDER BY created_at DESC'
             );
         },
         
         logAccess: async (logData) => {
-            const { userId, username, ipAddress, userAgent, action, success, details } = logData;
-            
             return await dbHelpers.run(
                 `INSERT INTO access_logs 
                 (user_id, username, ip_address, user_agent, action, success, details) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [userId, username, ipAddress, userAgent, action, success, details]
+                [
+                    logData.userId,
+                    logData.username,
+                    logData.ipAddress,
+                    logData.userAgent,
+                    logData.action,
+                    logData.success ? 1 : 0,
+                    logData.details
+                ]
             );
         }
     },
     
-    // Produtos
     products: {
         create: async (productData) => {
             const fields = Object.keys(productData);
             const values = Object.values(productData);
-            
             const placeholders = fields.map(() => '?').join(', ');
             
             return await dbHelpers.run(
@@ -181,7 +354,6 @@ const models = {
         update: async (id, updates) => {
             const fields = Object.keys(updates);
             const values = Object.values(updates);
-            
             const setClause = fields.map(f => `${f} = ?`).join(', ');
             
             return await dbHelpers.run(
@@ -214,19 +386,18 @@ const models = {
         }
     },
     
-    // Configurações
     settings: {
         get: async (key) => {
-            return await dbHelpers.get(
+            const result = await dbHelpers.get(
                 'SELECT value FROM settings WHERE key = ?',
                 [key]
             );
+            return result ? result.value : null;
         },
         
         set: async (key, value, description = null) => {
             return await dbHelpers.run(
-                `INSERT OR REPLACE INTO settings (key, value, description, updated_at) 
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
+                `INSERT OR REPLACE INTO settings (key, value, description) VALUES (?, ?, ?)`,
                 [key, value, description]
             );
         },
@@ -240,5 +411,8 @@ const models = {
         }
     }
 };
+
+// Inicializar banco de dados quando o módulo carregar
+initializeDatabase();
 
 module.exports = { db, dbHelpers, models };
