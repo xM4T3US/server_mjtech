@@ -26,5 +26,12 @@
       "src": "/(.*)",
       "dest": "/public/index.html"
     }
+    {
+  "src": "/admin-panel.html",
+  "dest": "/public/admin-panel.html",
+  "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+  }
+    }
   ]
 }
