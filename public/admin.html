@@ -7,28 +7,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Estilos do Login */
-        .login-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0a 100%);
             padding: 20px;
         }
-
-        .login-box {
+        
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .login-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
             padding: 40px;
-            width: 100%;
-            max-width: 450px;
             border: 1px solid rgba(74, 144, 226, 0.3);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
         }
-
-        .login-box::before {
+        
+        .login-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -37,13 +47,13 @@
             height: 4px;
             background: linear-gradient(90deg, #4a90e2, #25D366);
         }
-
-        .login-logo {
+        
+        .logo {
             text-align: center;
             margin-bottom: 30px;
         }
-
-        .login-logo .logo {
+        
+        .logo-circle {
             width: 80px;
             height: 80px;
             background: linear-gradient(45deg, #4a90e2, #25D366);
@@ -56,8 +66,8 @@
             font-weight: bold;
             color: white;
         }
-
-        .login-logo h1 {
+        
+        .logo h1 {
             font-size: 2.2rem;
             background: linear-gradient(45deg, #4a90e2, #25D366);
             -webkit-background-clip: text;
@@ -65,25 +75,25 @@
             color: transparent;
             margin-bottom: 10px;
         }
-
-        .login-logo p {
+        
+        .logo p {
             color: #b6e0ff;
             font-size: 1rem;
         }
-
-        .login-form .form-group {
+        
+        .form-group {
             margin-bottom: 20px;
         }
-
-        .login-form label {
+        
+        .form-group label {
             display: block;
             margin-bottom: 8px;
             color: #b6e0ff;
             font-weight: 500;
             font-size: 0.95rem;
         }
-
-        .login-form input {
+        
+        .form-group input {
             width: 100%;
             padding: 14px 16px;
             background: rgba(0, 0, 0, 0.3);
@@ -93,13 +103,13 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-
-        .login-form input:focus {
+        
+        .form-group input:focus {
             outline: none;
             border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
         }
-
+        
         .login-btn {
             width: 100%;
             padding: 15px;
@@ -112,13 +122,23 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-
+        
         .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
         }
-
+        
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
         .remember-me {
             display: flex;
             align-items: center;
@@ -127,238 +147,209 @@
             color: #b6e0ff;
             font-size: 0.9rem;
         }
-
+        
         .remember-me input {
             width: auto;
         }
-
-        .security-note {
-            text-align: center;
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .message.error {
+            background: rgba(255, 59, 48, 0.15);
+            border: 1px solid rgba(255, 59, 48, 0.4);
+            color: #ff3b30;
+            display: block;
+        }
+        
+        .message.success {
+            background: rgba(37, 211, 102, 0.15);
+            border: 1px solid rgba(37, 211, 102, 0.4);
+            color: #25D366;
+            display: block;
+        }
+        
+        .message.warning {
+            background: rgba(255, 149, 0, 0.15);
+            border: 1px solid rgba(255, 149, 0, 0.4);
+            color: #ff9500;
+            display: block;
+        }
+        
+        .security-info {
             margin-top: 25px;
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             color: #8a8a8a;
             font-size: 0.85rem;
+            text-align: center;
         }
-
-        .error-message {
-            background: rgba(255, 59, 48, 0.15);
-            border: 1px solid rgba(255, 59, 48, 0.4);
-            color: #ff3b30;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .success-message {
-            background: rgba(37, 211, 102, 0.15);
-            border: 1px solid rgba(37, 211, 102, 0.4);
-            color: #25D366;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        /* Estilos do Painel Administrativo */
-        .admin-panel {
-            display: none;
-        }
-
-        .header-bar {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(74, 144, 226, 0.3);
-            margin-bottom: 30px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(45deg, #4a90e2, #25D366);
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+            border-top-color: #4a90e2;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .credentials-note {
+            background: rgba(255, 217, 0, 0.1);
+            border: 1px solid rgba(255, 217, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #ffd700;
+        }
+        
+        .credentials-note strong {
             color: white;
-        }
-
-        .user-details span {
-            color: #b6e0ff;
-            font-size: 0.9rem;
-        }
-
-        .logout-btn {
-            background: rgba(255, 59, 48, 0.2);
-            color: #ff3b30;
-            border: 1px solid rgba(255, 59, 48, 0.4);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 59, 48, 0.3);
-            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
-    <!-- Tela de Login -->
-    <div id="loginContainer" class="login-container">
-        <div class="login-box">
-            <div class="login-logo">
-                <div class="logo">MJ</div>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <div class="logo-circle">MJ</div>
                 <h1>MJ TECH</h1>
                 <p>Acesso Restrito - Painel Administrativo</p>
             </div>
-
-            <div id="loginMessage" class="error-message"></div>
-            <div id="logoutMessage" class="success-message"></div>
-
-            <form id="loginForm" class="login-form">
+            
+            <div id="message" class="message"></div>
+            
+            <div id="credentialsNote" class="credentials-note" style="display: none;">
+                <p><i class="fas fa-exclamation-triangle"></i> <strong>Credenciais padrão:</strong></p>
+                <p>Usuário: <strong id="defaultUsername"></strong></p>
+                <p>Senha: <strong id="defaultPassword"></strong></p>
+                <p style="margin-top: 10px;"><i class="fas fa-shield-alt"></i> Altere a senha após o primeiro login!</p>
+            </div>
+            
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> Usuário ou E-mail</label>
                     <input type="text" id="username" name="username" required 
                            placeholder="Digite seu usuário ou e-mail">
                 </div>
-
+                
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> Senha</label>
                     <input type="password" id="password" name="password" required 
                            placeholder="Digite sua senha">
                 </div>
-
+                
                 <div class="remember-me">
                     <input type="checkbox" id="remember" name="remember">
                     <label for="remember">Manter-me conectado</label>
                 </div>
-
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Entrar no Painel
+                
+                <button type="submit" class="login-btn" id="loginButton">
+                    <span id="buttonText">Entrar no Painel</span>
+                    <span id="buttonLoading" class="loading" style="display: none;"></span>
                 </button>
             </form>
-
-            <div class="security-note">
-                <i class="fas fa-shield-alt"></i>
-                Acesso restrito apenas ao pessoal autorizado da MJ TECH
-            </div>
-        </div>
-    </div>
-
-    <!-- Painel Administrativo -->
-    <div id="adminPanel" class="admin-panel">
-        <!-- Header com informações do usuário -->
-        <div class="header-bar">
-            <div class="logo-title">
-                <h1 style="background: linear-gradient(45deg, #4a90e2, #25D366); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 1.5rem;">
-                    <i class="fas fa-tools"></i> MJ TECH - Painel Administrativo
-                </h1>
-            </div>
             
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">AD</div>
-                <div class="user-details">
-                    <strong id="userName">Administrador</strong><br>
-                    <span id="userRole">Administrador</span>
-                </div>
-                <button onclick="logout()" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </button>
+            <div class="security-info">
+                <p><i class="fas fa-shield-alt"></i> Sistema protegido com autenticação JWT</p>
+                <p style="font-size: 0.8rem; margin-top: 10px;">Acesso restrito ao pessoal autorizado</p>
             </div>
-        </div>
-
-        <!-- Conteúdo do Painel (será carregado dinamicamente) -->
-        <div class="container" id="dashboardContent">
-            <!-- Aqui será carregado o conteúdo do painel existente -->
         </div>
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURAÇÕES
-        // ============================================
+        // Configuração
         const API_BASE_URL = window.location.origin;
         const TOKEN_KEY = 'mjtech_admin_token';
         const USER_KEY = 'mjtech_admin_user';
-
-        // ============================================
-        // VERIFICAÇÃO INICIAL DE LOGIN
-        // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            
-            // Verificar se veio de logout
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('logout') === '1') {
-                showLogoutMessage('✅ Logout realizado com sucesso!');
-            }
-        });
-
-        // ============================================
-        // FUNÇÕES DE AUTENTICAÇÃO
-        // ============================================
-
-        // Verificar se o usuário está autenticado
-        async function checkAuth() {
-            const token = localStorage.getItem(TOKEN_KEY);
-            const user = localStorage.getItem(USER_KEY);
-
-            if (token && user) {
-                try {
-                    // Verificar token no servidor
-                    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success && data.valid) {
-                        // Token válido, carregar painel
-                        loadAdminPanel(JSON.parse(user));
-                    } else {
-                        // Token inválido, limpar storage
-                        clearAuth();
+        
+        // Elementos DOM
+        const loginForm = document.getElementById('loginForm');
+        const messageEl = document.getElementById('message');
+        const loginButton = document.getElementById('loginButton');
+        const buttonText = document.getElementById('buttonText');
+        const buttonLoading = document.getElementById('buttonLoading');
+        const credentialsNote = document.getElementById('credentialsNote');
+        const defaultUsername = document.getElementById('defaultUsername');
+        const defaultPassword = document.getElementById('defaultPassword');
+        
+        // Verificar se é primeira execução
+        async function checkFirstRun() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                if (data.stats && data.stats.users === 1) {
+                    // Primeiro usuário (admin padrão)
+                    const userResponse = await fetch(`${API_BASE_URL}/api/admin/users`);
+                    const userData = await userResponse.json();
+                    
+                    if (userData.users && userData.users.length === 1) {
+                        const adminUser = userData.users[0];
+                        defaultUsername.textContent = adminUser.username;
+                        defaultPassword.textContent = '(configurado no .env)';
+                        credentialsNote.style.display = 'block';
                     }
-                } catch (error) {
-                    console.error('Erro ao verificar autenticação:', error);
-                    clearAuth();
                 }
+            } catch (error) {
+                console.log('Não foi possível verificar primeiro acesso');
             }
         }
-
+        
+        // Mostrar mensagem
+        function showMessage(text, type = 'error') {
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            // Auto-esconder após 5 segundos
+            if (type !== 'error') {
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Mostrar loading
+        function showLoading(show) {
+            if (show) {
+                buttonText.style.display = 'none';
+                buttonLoading.style.display = 'inline-block';
+                loginButton.disabled = true;
+            } else {
+                buttonText.style.display = 'inline-block';
+                buttonLoading.style.display = 'none';
+                loginButton.disabled = false;
+            }
+        }
+        
         // Login
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
+            
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const remember = document.getElementById('remember').checked;
-
+            
             if (!username || !password) {
-                showLoginMessage('❌ Preencha todos os campos!');
+                showMessage('Preencha todos os campos!');
                 return;
             }
-
-            showLoginMessage('⏳ Verificando credenciais...', 'warning');
-
+            
+            showMessage('Verificando credenciais...', 'warning');
+            showLoading(true);
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
@@ -371,166 +362,70 @@
                         remember
                     })
                 });
-
+                
                 const data = await response.json();
-
+                
                 if (data.success) {
                     // Salvar token e dados do usuário
                     localStorage.setItem(TOKEN_KEY, data.token);
                     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
                     
-                    // Carregar painel administrativo
-                    loadAdminPanel(data.user);
+                    showMessage('✅ Login realizado com sucesso! Redirecionando...', 'success');
+                    
+                    // Redirecionar para o painel após 1 segundo
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                    
                 } else {
-                    showLoginMessage('❌ ' + (data.error || 'Credenciais inválidas'));
+                    showMessage('❌ ' + (data.error || 'Credenciais inválidas'));
+                    showLoading(false);
                 }
+                
             } catch (error) {
-                showLoginMessage('❌ Erro de conexão com o servidor');
                 console.error('Erro no login:', error);
+                showMessage('❌ Erro de conexão com o servidor');
+                showLoading(false);
             }
         });
-
-        // Carregar painel administrativo
-        async function loadAdminPanel(user) {
-            // Mostrar informações do usuário
-            document.getElementById('userName').textContent = user.fullName || user.username;
-            document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrador' : 'Editor';
-            
-            // Iniciais para o avatar
-            const initials = (user.fullName || user.username).charAt(0).toUpperCase();
-            document.getElementById('userAvatar').textContent = initials;
-
-            // Esconder login e mostrar painel
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-
-            // Carregar o conteúdo do painel existente
-            await loadDashboardContent();
-        }
-
-        // Carregar conteúdo do painel
-        async function loadDashboardContent() {
-            try {
-                const response = await fetch('/index.html');
-                const html = await response.text();
-                
-                // Extrair apenas o conteúdo necessário
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-                
-                const container = tempDiv.querySelector('.container');
-                if (container) {
-                    document.getElementById('dashboardContent').innerHTML = container.innerHTML;
-                    
-                    // Reatribuir eventos aos botões
-                    setTimeout(() => {
-                        reinitializeDashboard();
-                    }, 100);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar painel:', error);
-                document.getElementById('dashboardContent').innerHTML = `
-                    <div style="padding: 40px; text-align: center; color: #ff3b30;">
-                        <i class="fas fa-exclamation-triangle fa-3x"></i>
-                        <h2>Erro ao carregar o painel</h2>
-                        <p>${error.message}</p>
-                        <button onclick="location.reload()" class="login-btn" style="margin-top: 20px;">
-                            <i class="fas fa-redo"></i> Tentar Novamente
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // Reativar funcionalidades do painel
-        function reinitializeDashboard() {
-            // Recarregar produtos
-            if (typeof loadProducts === 'function') {
-                loadProducts();
-                updateStats();
-            }
-            
-            // Reatribuir evento do formulário
-            const productForm = document.getElementById('productForm');
-            if (productForm) {
-                productForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    const token = localStorage.getItem(TOKEN_KEY);
-                    if (!token) {
-                        alert('Sessão expirada. Faça login novamente.');
-                        logout();
-                        return;
-                    }
-                    
-                    // Resto do código do formulário...
-                    // (você precisará adaptar seu código existente aqui)
-                });
-            }
-        }
-
-        // Logout
-        function logout() {
-            if (confirm('Deseja realmente sair do painel administrativo?')) {
-                clearAuth();
-                window.location.href = '/admin?logout=1';
-            }
-        }
-
-        // Limpar dados de autenticação
-        function clearAuth() {
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(USER_KEY);
-            
-            // Mostrar tela de login
-            document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('adminPanel').style.display = 'none';
-            
-            // Limpar formulário
-            document.getElementById('loginForm').reset();
-        }
-
-        // Mostrar mensagem de login
-        function showLoginMessage(message, type = 'error') {
-            const msgEl = document.getElementById('loginMessage');
-            msgEl.textContent = message;
-            msgEl.className = type === 'error' ? 'error-message' : 'success-message';
-            msgEl.style.display = 'block';
-            
-            setTimeout(() => {
-                msgEl.style.display = 'none';
-            }, 5000);
-        }
-
-        // Mostrar mensagem de logout
-        function showLogoutMessage(message) {
-            const msgEl = document.getElementById('logoutMessage');
-            msgEl.textContent = message;
-            msgEl.style.display = 'block';
-            
-            setTimeout(() => {
-                msgEl.style.display = 'none';
-            }, 5000);
-        }
-
-        // Interceptar requisições para adicionar token
-        const originalFetch = window.fetch;
-        window.fetch = async function(url, options = {}) {
+        
+        // Verificar se já está logado
+        async function checkAuth() {
             const token = localStorage.getItem(TOKEN_KEY);
+            const user = localStorage.getItem(USER_KEY);
             
-            // Se for uma requisição para rotas protegidas, adicionar token
-            if (url.includes('/api/admin/') && token) {
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${token}`
-                };
+            if (token && user) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.valid) {
+                        // Já está logado, redirecionar para o painel
+                        window.location.href = '/';
+                    } else {
+                        // Token inválido, limpar
+                        localStorage.removeItem(TOKEN_KEY);
+                        localStorage.removeItem(USER_KEY);
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar token:', error);
+                }
             }
-            
-            return originalFetch(url, options);
-        };
-
-        // Verificar token periodicamente
-        setInterval(checkAuth, 300000); // A cada 5 minutos
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            checkFirstRun();
+        });
+        
+        // Focar no campo de usuário
+        document.getElementById('username').focus();
     </script>
 </body>
 </html>
