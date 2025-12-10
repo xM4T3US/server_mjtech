@@ -1,7 +1,7 @@
 {
   "name": "mjtech-api",
-  "version": "1.0.0",
-  "description": "API da MJ TECH para integração com Mercado Livre",
+  "version": "2.0.0",
+  "description": "API da MJ TECH com sistema de login e painel administrativo",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
@@ -12,6 +12,9 @@
     "express": "^4.18.2",
     "axios": "^1.6.2",
     "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1",
     "node-cache": "^5.1.2"
   },
   "devDependencies": {
