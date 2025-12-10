@@ -4,10 +4,6 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -17,11 +13,10 @@
     },
     {
       "src": "/admin",
-      "dest": "/public/admin.html"
-    },
-    {
-      "src": "/",
-      "dest": "/public/index.html"
+      "dest": "/api/index.js",
+      "headers": {
+        "Content-Type": "text/html"
+      }
     },
     {
       "src": "/(.*)",
