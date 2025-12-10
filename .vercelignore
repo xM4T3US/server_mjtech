@@ -1,0 +1,9 @@
+node_modules/
+database/
+.git
+.gitignore
+*.md
+*.log
+.env.local
+.env.development
+.env.test
