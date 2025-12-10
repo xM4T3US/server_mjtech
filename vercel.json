@@ -39,6 +39,10 @@
     {
       "src": "/js/(.*)",
       "dest": "/public/js/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/admin.html"
     }
   ]
 }
