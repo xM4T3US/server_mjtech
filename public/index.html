@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MJ TECH API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .endpoint { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MJ TECH API v3.0</h1>
+        <p>Sistema de catálogo com autenticação segura</p>
+        
+        <h2>📡 Endpoints Públicos:</h2>
+        <div class="endpoint">
+            <strong>GET /api/health</strong> - Status do serviço
+        </div>
+        <div class="endpoint">
+            <strong>GET /api/products</strong> - Lista de produtos
+        </div>
+        <div class="endpoint">
+            <strong>POST /api/auth/login</strong> - Login administrativo
+        </div>
+        
+        <h2>🔐 Painel Administrativo:</h2>
+        <a href="/admin" style="background: #4a90e2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Acessar Painel Admin
+        </a>
+        
+        <h2>⚙️ Credenciais Padrão:</h2>
+        <p>Usuário: <code>admin_mjtech</code></p>
+        <p>Senha: <code>S3nh@F0rt3!2025</code></p>
+        <p><small>Configure no arquivo .env após o primeiro login</small></p>
+    </div>
+    
+    <script>
+        // Testar conexão
+        fetch('/api/health')
+            .then(res => res.json())
+            .then(data => {
+                console.log('API Status:', data);
+                if (data.success) {
+                    document.body.innerHTML += `<p style="color: green;">✅ API Online</p>`;
+                }
+            })
+            .catch(err => {
+                console.error('Erro:', err);
+                document.body.innerHTML += `<p style="color: red;">❌ API Offline</p>`;
+            });
+    </script>
+</body>
+</html>
