@@ -1,46 +1,26 @@
 {
   "name": "mjtech-api",
-  "version": "3.0.0",
-  "description": "API da MJ TECH com painel administrativo e banco de dados PostgreSQL",
+  "version": "4.0.0",
+  "description": "API da MJ TECH com Supabase PostgreSQL",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
-    "dev": "node api/index.js",
-    "vercel-dev": "vercel dev",
-    "deploy": "vercel --prod",
-    "setup": "npm install",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
   },
-  "keywords": [
-    "mjtech",
-    "ecommerce",
-    "api",
-    "postgresql",
-    "admin-panel"
-  ],
-  "author": "MJ TECH",
-  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "dotenv": "^16.3.1",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "@supabase/supabase-js": "^2.39.7"
   },
   "devDependencies": {
     "@vercel/node": "^3.0.0"
   },
   "engines": {
-    "node": ">=18.x",
-    "npm": ">=9.x"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xM4T3US/mjtech-store"
-  },
-  "bugs": {
-    "url": "https://github.com/xM4T3US/mjtech-store/issues"
-  },
-  "homepage": "https://mjtech.net.br"
+    "node": ">=18.x"
+  }
 }
