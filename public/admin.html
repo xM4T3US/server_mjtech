@@ -6,7 +6,6 @@
     <title>MJ TECH - Painel Administrativo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos do Login */
         * {
             margin: 0;
             padding: 0;
@@ -139,19 +138,6 @@
             transform: none !important;
         }
         
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 15px 0;
-            color: #b6e0ff;
-            font-size: 0.9rem;
-        }
-        
-        .remember-me input {
-            width: auto;
-        }
-        
         .message {
             padding: 12px 16px;
             border-radius: 10px;
@@ -203,20 +189,6 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
-        .credentials-note {
-            background: rgba(255, 217, 0, 0.1);
-            border: 1px solid rgba(255, 217, 0, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: #ffd700;
-        }
-        
-        .credentials-note strong {
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -230,29 +202,17 @@
             
             <div id="message" class="message"></div>
             
-            <div id="credentialsNote" class="credentials-note" style="display: none;">
-                <p><i class="fas fa-exclamation-triangle"></i> <strong>Credenciais padrão:</strong></p>
-                <p>Usuário: <strong id="defaultUsername"></strong></p>
-                <p>Senha: <strong id="defaultPassword"></strong></p>
-                <p style="margin-top: 10px;"><i class="fas fa-shield-alt"></i> Altere a senha após o primeiro login!</p>
-            </div>
-            
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> Usuário ou E-mail</label>
                     <input type="text" id="username" name="username" required 
-                           placeholder="Digite seu usuário ou e-mail">
+                           placeholder="Digite seu usuário ou e-mail" autocomplete="username">
                 </div>
                 
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> Senha</label>
                     <input type="password" id="password" name="password" required 
-                           placeholder="Digite sua senha">
-                </div>
-                
-                <div class="remember-me">
-                    <input type="checkbox" id="remember" name="remember">
-                    <label for="remember">Manter-me conectado</label>
+                           placeholder="Digite sua senha" autocomplete="current-password">
                 </div>
                 
                 <button type="submit" class="login-btn" id="loginButton">
@@ -263,7 +223,7 @@
             
             <div class="security-info">
                 <p><i class="fas fa-shield-alt"></i> Sistema protegido com autenticação JWT</p>
-                <p style="font-size: 0.8rem; margin-top: 10px;">Acesso restrito ao pessoal autorizado</p>
+                <p style="font-size: 0.8rem; margin-top: 10px;">Use as credenciais configuradas no Vercel</p>
             </div>
         </div>
     </div>
@@ -271,8 +231,6 @@
     <script>
         // Configuração
         const API_BASE_URL = window.location.origin;
-        const TOKEN_KEY = 'mjtech_admin_token';
-        const USER_KEY = 'mjtech_admin_user';
         
         // Elementos DOM
         const loginForm = document.getElementById('loginForm');
@@ -280,32 +238,6 @@
         const loginButton = document.getElementById('loginButton');
         const buttonText = document.getElementById('buttonText');
         const buttonLoading = document.getElementById('buttonLoading');
-        const credentialsNote = document.getElementById('credentialsNote');
-        const defaultUsername = document.getElementById('defaultUsername');
-        const defaultPassword = document.getElementById('defaultPassword');
-        
-        // Verificar se é primeira execução
-        async function checkFirstRun() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/health`);
-                const data = await response.json();
-                
-                if (data.stats && data.stats.users === 1) {
-                    // Primeiro usuário (admin padrão)
-                    const userResponse = await fetch(`${API_BASE_URL}/api/admin/users`);
-                    const userData = await userResponse.json();
-                    
-                    if (userData.users && userData.users.length === 1) {
-                        const adminUser = userData.users[0];
-                        defaultUsername.textContent = adminUser.username;
-                        defaultPassword.textContent = '(configurado no .env)';
-                        credentialsNote.style.display = 'block';
-                    }
-                }
-            } catch (error) {
-                console.log('Não foi possível verificar primeiro acesso');
-            }
-        }
         
         // Mostrar mensagem
         function showMessage(text, type = 'error') {
@@ -313,7 +245,6 @@
             messageEl.className = `message ${type}`;
             messageEl.style.display = 'block';
             
-            // Auto-esconder após 5 segundos
             if (type !== 'error') {
                 setTimeout(() => {
                     messageEl.style.display = 'none';
@@ -340,7 +271,6 @@
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
             
             if (!username || !password) {
                 showMessage('Preencha todos os campos!');
@@ -358,8 +288,7 @@
                     },
                     body: JSON.stringify({
                         username,
-                        password,
-                        remember
+                        password
                     })
                 });
                 
@@ -367,8 +296,8 @@
                 
                 if (data.success) {
                     // Salvar token e dados do usuário
-                    localStorage.setItem(TOKEN_KEY, data.token);
-                    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+                    localStorage.setItem('mjtech_admin_token', data.token);
+                    localStorage.setItem('mjtech_admin_user', JSON.stringify(data.user));
                     
                     showMessage('✅ Login realizado com sucesso! Redirecionando...', 'success');
                     
@@ -384,15 +313,15 @@
                 
             } catch (error) {
                 console.error('Erro no login:', error);
-                showMessage('❌ Erro de conexão com o servidor');
+                showMessage('❌ Erro de conexão com a API');
                 showLoading(false);
             }
         });
         
         // Verificar se já está logado
         async function checkAuth() {
-            const token = localStorage.getItem(TOKEN_KEY);
-            const user = localStorage.getItem(USER_KEY);
+            const token = localStorage.getItem('mjtech_admin_token');
+            const user = localStorage.getItem('mjtech_admin_user');
             
             if (token && user) {
                 try {
@@ -407,10 +336,6 @@
                     if (data.success && data.valid) {
                         // Já está logado, redirecionar para o painel
                         window.location.href = '/';
-                    } else {
-                        // Token inválido, limpar
-                        localStorage.removeItem(TOKEN_KEY);
-                        localStorage.removeItem(USER_KEY);
                     }
                 } catch (error) {
                     console.error('Erro ao verificar token:', error);
@@ -421,7 +346,6 @@
         // Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
-            checkFirstRun();
         });
         
         // Focar no campo de usuário
