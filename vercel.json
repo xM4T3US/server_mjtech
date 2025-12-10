@@ -20,6 +20,10 @@
       "dest": "/public/admin.html"
     },
     {
+      "src": "/admin-panel",
+      "dest": "/public/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
