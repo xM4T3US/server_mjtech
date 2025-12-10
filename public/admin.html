@@ -302,9 +302,9 @@
                     showMessage('✅ Login realizado com sucesso! Redirecionando...', 'success');
                     
                     // Redirecionar para o painel após 1 segundo
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
+setTimeout(() => {
+    window.location.href = '/admin-panel.html';
+}, 1000);
                     
                 } else {
                     showMessage('❌ ' + (data.error || 'Credenciais inválidas'));
