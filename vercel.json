@@ -20,7 +20,7 @@
       "dest": "/public/admin.html"
     },
     {
-      "src": "/admin-panel",
+      "src": "/",
       "dest": "/public/index.html"
     },
     {
